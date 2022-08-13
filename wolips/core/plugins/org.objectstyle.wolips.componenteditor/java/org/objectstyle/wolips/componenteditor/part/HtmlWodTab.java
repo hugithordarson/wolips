@@ -221,11 +221,13 @@ public class HtmlWodTab extends ComponentEditorTab {
 				sashWeights[sashWeightNum] = Integer.parseInt(sashWeightStrs[sashWeightNum]);
 			}
 			if (sashWeights.length == getParentSashForm().getWeights().length) {
-				if (sashWeights[1] / (float)sashWeights[0] < 0.15) {
-					sashWeights[0] = 85;
-					sashWeights[1] = 15;
+				if( sashWeights.length > 1 ) { // This condition allows for single-file components (no wod file)
+					if (sashWeights[1] / (float)sashWeights[0] < 0.15) {
+						sashWeights[0] = 85;
+						sashWeights[1] = 15;
+					}
+					getParentSashForm().setWeights(sashWeights);
 				}
-				getParentSashForm().setWeights(sashWeights);
 			}
 		}
 	}
