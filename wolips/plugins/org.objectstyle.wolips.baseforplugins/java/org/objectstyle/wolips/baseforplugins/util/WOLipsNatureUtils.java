@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
@@ -131,8 +132,31 @@ public class WOLipsNatureUtils {
 		return nature;
 	}
 
+	/**
+	 * @return Whether the project has a WO nature in it's .project file, if not, checks if a build.properties file exists, containing the string "project.name"
+	 * 
+	 * FIXME: Hackity hack. Method should probably do what it's name says and the attempted fix that checks for build.properties probably belongs somewhere else // Hugi 2025-11-05
+	 */
 	public static boolean isWOLipsNature(IProject project) {
-		return WOLipsNatureUtils.getNature(project) != null;
+		final boolean hasWOLipsNature = WOLipsNatureUtils.getNature(project) != null;
+		
+		if( hasWOLipsNature ) {
+			return true;
+		}
+
+		// If no WOLips nature is found, we proceed to check for a build.properties file
+		final IFile file = project.getFile("build.properties");
+		
+		if( !file.exists() ) {
+			return false;
+		}
+
+		try {
+			return file.readString().contains("project.name");
+		}
+		catch (CoreException e) {
+			throw new RuntimeException( e );
+		}
 	}
 	
 	/**
