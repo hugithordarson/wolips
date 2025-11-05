@@ -98,12 +98,21 @@ public class ProjectAdapterFactory extends AbstractResourceAdapterFactory {
 
 	public IResourceType createAdapter(Object adaptableObject, Class adapterType) {
 		IProject project = (IProject) adaptableObject;
-		Nature nature = (Nature) WOLipsNatureUtils.getNature(project);
-		if (nature == null) {
-			return null;
-		} else if (adapterType == ProjectAdapter.class) {
-			return new ProjectAdapter(project, nature.isFramework());
-		} else if (adapterType == IProjectPatternsets.class) {
+		
+		boolean isFramework = false;
+
+		final Nature nature = (Nature) WOLipsNatureUtils.getNature(project);
+
+		if (nature != null) {
+			// FIXME: Check the build.properties file perhaps? // Hugi
+			isFramework = nature.isFramework();
+		}
+
+		if (adapterType == ProjectAdapter.class) {
+			return new ProjectAdapter(project, isFramework);
+		}
+		
+		if (adapterType == IProjectPatternsets.class) {
 			ProjectPatternsets projectPatternSets = _projectPatternSets.get(adaptableObject);
 			if (projectPatternSets == null) {
 				projectPatternSets = new ProjectPatternsets(project);
@@ -111,6 +120,7 @@ public class ProjectAdapterFactory extends AbstractResourceAdapterFactory {
 			}
 			return projectPatternSets;
 		}
+
 		return null;
 	}
 }
