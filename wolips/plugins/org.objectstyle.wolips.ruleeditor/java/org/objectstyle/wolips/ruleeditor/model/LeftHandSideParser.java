@@ -215,7 +215,7 @@ public class LeftHandSideParser {
 
 	private Map<String, Object> handleNotQualifier(final String conditionsToParse) {
 		if (hasNotQualifier(conditionsToParse)) {
-			String notPattern = "not\\s*\\(.*\\)";
+			String notPattern = "not\\s*(\\(.*\\)|\\$INTERNAL_QUALIFIER_\\d+\\$)";
 
 			Iterator<String> tokenizer = new RegularExpressionTokenizer(conditionsToParse, notPattern, true);
 
@@ -255,13 +255,12 @@ public class LeftHandSideParser {
 
 			Iterator<String> tokenizer = new RegularExpressionTokenizer(result, parenthesisPattern, false);
 
-			tokenizer.hasNext();
-
-			String internalQualifier = tokenizer.next();
-
-			result = StringUtils.replace(result, internalQualifier, INTERNAL_QUALIFIER_PREFIX + count + "$");
-
-			qualifierSubstitutionMap.put(INTERNAL_QUALIFIER_PREFIX + count + "$", internalQualifier);
+			while(tokenizer.hasNext()) {
+				String internalQualifier = tokenizer.next();
+				result = StringUtils.replace(result, internalQualifier, INTERNAL_QUALIFIER_PREFIX + count + "$");
+				qualifierSubstitutionMap.put(INTERNAL_QUALIFIER_PREFIX + count + "$", internalQualifier);
+				count++;
+			}
 		}
 
 		return result;
