@@ -49,6 +49,7 @@
  */
 package org.objectstyle.wolips.refactoring;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -57,6 +58,7 @@ import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RenameParticipant;
+import org.objectstyle.wolips.variables.BuildProperties;
 
 /**
  * Plugs into the refactoring process and renames a WOComponent by renaming the
@@ -74,6 +76,11 @@ public class RenameWOComponentParticipant extends RenameParticipant {
 		try {
 			if (_element instanceof IType) {
 				mySourceType = (IType) _element;
+
+				if (!refactoringEnabled(mySourceType.getJavaProject().getProject())) {
+					return false;
+				}
+
 				initialized = PluginUtils.isOfType(mySourceType, "com.webobjects.appserver.WOComponent");
 			}
 		} catch (Throwable e) {
@@ -81,6 +88,19 @@ public class RenameWOComponentParticipant extends RenameParticipant {
 			initialized = false;
 		}
 		return initialized;
+	}
+
+	/**
+	 * Returns true if this participant should handle refactoring for the
+	 * given project. Projects that set "project.base" in build.properties
+	 * use their own tooling for component renames, so we back off.
+	 *
+	 * CHECKME: This check might belong in BuildProperties.java as a
+	 * general "does this project use external tooling?" query.
+	 */
+	private static boolean refactoringEnabled(IProject project) {
+		BuildProperties buildProperties = (BuildProperties) project.getAdapter(BuildProperties.class);
+		return buildProperties == null || buildProperties.get("project.base") == null;
 	}
 
 	public String getName() {
